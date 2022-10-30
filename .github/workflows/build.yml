@@ -12,12 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          node-version: 14
+          node-version: 14.x
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: Install dependencies
-        run: npm i
-      - name: Test and coverage
-        run: ng test --no-watch --browsers=ChromeHeadlessCI --coverage
+        run: npm ci
+      - name: Test and coveragec:\Users\andre\AppData\Local\Programs\Microsoft VS Code\resources\app\out\vs\code\electron-sandbox\workbench\workbench.html
+        run: npm test-ci
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
