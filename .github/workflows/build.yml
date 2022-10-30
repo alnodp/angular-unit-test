@@ -1,27 +1,90 @@
-name: Build
+name: Build & Test SonarCloud
 on:
   push:
     branches:
       - master
   pull_request:
     types: [opened, synchronize, reopened]
+
+env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    sonar_properties_file: sonar-project-custom.properties
+    project_name: angular-unit-test
+    cache_path: node_modules
+
+
 jobs:
-  sonarcloud:
-    name: SonarCloud
+  build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [ 14.x ]
     steps:
       - uses: actions/checkout@v2
-      - name: use Node 14
-        uses: actions/setup-node@v2
+      - name: use Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
         with:
-          node-version: 14.x
-          cache: 'npm'
+          node-version: ${{ matrix.node-version }}
+      - name: Restore cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.cache_path }}
+          key: ${{ env.project_name }}-${{ hashFiles('**/package.json') }}
+          restore-keys: ${{ env.project_name }}
       - name: Install dependencies
         run: npm ci
-      - name: Test and coverage
+      - name: Build artifact
+        run: npm run build
+      - name : validate files
+        run: ls -la
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      matrix:
+        node-version: [ 14.x ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Restore cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.cache_path }}
+          key: ${{ env.project_name }}-${{ hashFiles('**/package.json') }}
+          restore-keys: ${{ env.project_name }}
+      - name: Running Test
         run: npm run test-ci
+      - name: Persist Data
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage
+          path: coverage
+          retention-days: 1
+
+  sonar:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v2
+      - name: use Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Restore cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.cache_path }}
+          key: ${{ env.project_name }}-${{ hashFiles('**/package.json') }}
+          restore-keys: ${{ env.project_name }}
+      - name: Restore Data
+        uses: actions/download-artifact@v2
+        with:
+          name: coverage
+          path: coverage
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
