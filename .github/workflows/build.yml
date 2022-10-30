@@ -9,7 +9,7 @@ on:
 env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-    sonar_properties_file: sonar-project-custom.properties
+    sonar_properties_file: sonar-project.properties
     project_name: angular-unit-test
     cache_path: node_modules
 
@@ -89,5 +89,7 @@ jobs:
         with:
           name: coverage
           path: coverage
+      - name : validate files
+        run: ls -la
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
