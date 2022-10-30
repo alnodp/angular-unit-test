@@ -16,7 +16,7 @@ jobs:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: Install dependencies
         run: npm ci
-      - name: Test and coveragec:\Users\andre\AppData\Local\Programs\Microsoft VS Code\resources\app\out\vs\code\electron-sandbox\workbench\workbench.html
+      - name: Test and coverage
         run: npm test-ci
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
