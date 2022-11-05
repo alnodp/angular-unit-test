@@ -90,6 +90,6 @@ jobs:
           name: coverage
           path: coverage
       - name : validate files
-        run: ls -la && ls -la coverage
+        run: ls -la && ls -la coverage && cat coverage/lcov.info
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
